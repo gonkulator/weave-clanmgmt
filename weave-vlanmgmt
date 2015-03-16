@@ -1,0 +1,63 @@
+#!/bin/sh
+#the very beginning of weave vlan assignment/management
+set -e
+
+vlan() {
+case "$1" in
+	attach)
+	#get the vlan num
+	TARGETVLAN=$(etcdctl get /weave/vlans/namemap/$2)
+	#grab the network particulars
+	TARGETNETWORK=$(etcdctl ls /weave/vlans/${TARGETVLAN}/network | awk -F\/ '{print $6}')
+	TARGETNETMASK=$(etcdctl get /weave/vlans/${TARGETVLAN}/network/${TARGETNETWORK}/netmask)
+	#see if we already have been assigned an ip in this vlan
+	IHAZIP=$(etcdctl ls /weave/vlans/${TARGETVLAN}/network/${TARGETNETWORK}/rollcall | grep $(hostname) | awk -F\/ '{print $8}')
+         if [ -n "$IHAZIP" ] ; then
+           echo "You already have an ip on the $2 weave VLAN!"
+           exit 1
+	 fi
+	TARGETIP=$(etcdctl ls /weave/vlans/${TARGETVLAN}/network/${TARGETNETWORK}/ip-pool/available | head -1 | awk -F\/ '{print $9}')
+  	 if [ -z "$TARGETIP" ] ; then
+	   echo "NO AVAILABLE IP's! in the $2 vlan"
+	   exit 1
+	fi
+	#snatch the ip
+	etcdctl rm /weave/vlans/${TARGETVLAN}/network/${TARGETNETWORK}/ip-pool/available/${TARGETIP} 2>/dev/null
+	etcdctl mk /weave/vlans/${TARGETVLAN}/network/${TARGETNETWORK}/ip-pool/assigned/${TARGETIP} $(hostname) 2>/dev/null
+	etcdctl mk /weave/vlans/${TARGETVLAN}/network/${TARGETNETWORK}/rollcall/$(hostname) ${TARGETIP} 2>/dev/null
+	sudo weave expose ${TARGETIP}/${TARGETNETMASK}
+	;;
+	detach)
+	#get the vlan num
+        TARGETVLAN=$(etcdctl get /weave/vlans/namemap/$2)
+	#figure out which IP we have
+        TARGETNETWORK=$(etcdctl ls /weave/vlans/${TARGETVLAN}/network | awk -F\/ '{print $6}')
+	TARGETNETMASK=$(etcdctl get /weave/vlans/${TARGETVLAN}/network/${TARGETNETWORK}/netmask)
+	IHAZIP=$(etcdctl ls /weave/vlans/${TARGETVLAN}/network/${TARGETNETWORK}/rollcall | grep $(hostname) | awk -F\/ '{print $8}')
+	 if [ -z "$IHAZIP" ] ; then
+	   echo "You dont have an ip reserved in the $2 weave VLAN!"
+	   exit 1
+   	 fi
+	#release it
+	MYIP=$(etcdctl get /weave/vlans/${TARGETVLAN}/network/${TARGETNETWORK}/rollcall/${IHAZIP})
+	sudo weave hide ${MYIP}/${TARGETNETMASK}
+	etcdctl rm /weave/vlans/${TARGETVLAN}/network/${TARGETNETWORK}/ip-pool/assigned/${MYIP} 2>/dev/null
+	etcdctl rm /weave/vlans/${TARGETVLAN}/network/${TARGETNETWORK}/rollcall/${IHAZIP} 2>/dev/null
+	#back to the pool
+	etcdctl mk /weave/vlans/${TARGETVLAN}/network/${TARGETNETWORK}/ip-pool/available/${MYIP} avail 2>/dev/null
+	;;
+	status)
+	IHAZSTUFF=$(etcdctl ls /weave/vlans --recursive|grep rollcall| grep $(hostname) | awk -F\/ '{print $8}')
+	if [ -z "$IHAZSTUFF" ] ; then
+	 echo "This host is not currently attached to any weave vlans..."
+	else 
+	 echo "Status:"
+	 etcdctl ls /weave/vlans --recursive|grep rollcall| grep $(hostname)
+	fi
+	;;
+	*)
+	echo "Invalid argument"
+	;;
+esac
+}
+vlan $*
