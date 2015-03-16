@@ -18,7 +18,7 @@ case "$1" in
 	 fi
 	TARGETIP=$(etcdctl ls /weave/vlans/${TARGETVLAN}/network/${TARGETNETWORK}/ip-pool/available | head -1 | awk -F\/ '{print $9}')
   	 if [ -z "$TARGETIP" ] ; then
-	   echo "NO AVAILABLE IP's! in the $2 vlan"
+	   echo "NO AVAILABLE IP's in the $2 vlan!"
 	   exit 1
 	fi
 	#snatch the ip
@@ -35,7 +35,7 @@ case "$1" in
 	TARGETNETMASK=$(etcdctl get /weave/vlans/${TARGETVLAN}/network/${TARGETNETWORK}/netmask)
 	IHAZIP=$(etcdctl ls /weave/vlans/${TARGETVLAN}/network/${TARGETNETWORK}/rollcall | grep $(hostname) | awk -F\/ '{print $8}')
 	 if [ -z "$IHAZIP" ] ; then
-	   echo "You dont have an ip reserved in the $2 weave VLAN!"
+	   echo "You are not currently connected to the $2 weave VLAN!"
 	   exit 1
    	 fi
 	#release it
