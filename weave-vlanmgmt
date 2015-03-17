@@ -25,7 +25,7 @@ case "$1" in
 	etcdctl rm /weave/vlans/${TARGETVLAN}/network/${TARGETNETWORK}/ip-pool/available/${TARGETIP} 2>/dev/null
 	etcdctl mk /weave/vlans/${TARGETVLAN}/network/${TARGETNETWORK}/ip-pool/assigned/${TARGETIP} $(hostname) 2>/dev/null
 	etcdctl mk /weave/vlans/${TARGETVLAN}/network/${TARGETNETWORK}/rollcall/$(hostname) ${TARGETIP} 2>/dev/null
-	sudo weave expose ${TARGETIP}/${TARGETNETMASK}
+	/opt/bin/weave expose ${TARGETIP}/${TARGETNETMASK}
 	;;
 	detach)
 	#get the vlan num
@@ -40,7 +40,7 @@ case "$1" in
    	 fi
 	#release it
 	MYIP=$(etcdctl get /weave/vlans/${TARGETVLAN}/network/${TARGETNETWORK}/rollcall/${IHAZIP})
-	sudo weave hide ${MYIP}/${TARGETNETMASK}
+	/opt/bin/weave hide ${MYIP}/${TARGETNETMASK}
 	etcdctl rm /weave/vlans/${TARGETVLAN}/network/${TARGETNETWORK}/ip-pool/assigned/${MYIP} 2>/dev/null
 	etcdctl rm /weave/vlans/${TARGETVLAN}/network/${TARGETNETWORK}/rollcall/${IHAZIP} 2>/dev/null
 	#back to the pool
