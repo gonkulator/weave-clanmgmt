@@ -1,5 +1,6 @@
 #!/bin/sh
-etcdctl mkdir /weave
+#runnning after weave service starts - so skip this bit
+#etcdctl mkdir /weave
 etcdctl mkdir /weave/vlans
 etcdctl mkdir /weave/vlans/namemap
 etcdctl mk /weave/vlans/namemap/dev 1
