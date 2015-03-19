@@ -46,6 +46,21 @@ case "$1" in
 	#back to the pool
 	etcdctl mk /weave/vlans/${TARGETVLAN}/network/${TARGETNETWORK}/ip-pool/available/${MYIP} avail 2>/dev/null
 	;;
+	create)
+	shift 1
+	case $1 in
+		vlan)
+		echo "Creating vlan $2 with numeric identifier $3"
+		VLANEXIST=$(etcdctl get /weave/vlans/$3)
+		 if [ -z "$VLANEXIST"] ; then
+		  echo "Sorry - a vlan numbered $3 already exists!"
+		 fi
+		;;
+		*)
+		echo "Invalid selection"
+		;;
+	esac
+	;;
 	status)
 	IHAZSTUFF=$(etcdctl ls /weave/vlans --recursive|grep rollcall| grep $(hostname) | awk -F\/ '{print $8}')
 	if [ -z "$IHAZSTUFF" ] ; then
