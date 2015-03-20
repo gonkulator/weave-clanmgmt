@@ -8,7 +8,7 @@ etcdctl mk /weave/vlans/namemap/dev 1
 etcdctl mk /weave/vlans/namemap/test 2
 etcdctl mk /weave/vlans/namemap/prod 3
 etcdctl mk /weave/vlans/namemap/1 dev
-etctctl mk /weave/vlans/namemap/2 test
+etcdctl mk /weave/vlans/namemap/2 test
 etcdctl mk /weave/vlans/namemap/3 prod
 etcdctl mkdir /weave/vlans/1
 etcdctl mkdir /weave/vlans/2
