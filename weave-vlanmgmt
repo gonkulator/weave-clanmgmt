@@ -19,33 +19,33 @@ vlan() {
     etcdctl rm /weave/vlans/namemap/$2 >/dev/null
     etcdctl rm --recursive /weave/vlans/$1
   }
-
- get_vlan_name() {
-   etcdctl ls /weave/vlans/$1 2> /dev/null || true
-}
-
- does_vlan_exist() {
-  etcdctl ls /weave/vlans/$1 2>&1 1>/dev/null | grep '100:' | wc -l || true
-}
-
-cidr2mask() {
-  local i mask=""
-  local full_octets=$(($1/8))
-  local partial_octet=$(($1%8))
-
-  for ((i=0;i<4;i+=1)); do
-    if [ $i -lt $full_octets ]; then
-      mask+=255
-    elif [ $i -eq $full_octets ]; then
-      mask+=$((256 - 2**(8-$partial_octet)))
-    else
-      mask+=0
-    fi  
-    test $i -lt 3 && mask+=.
-  done
-
-  echo $mask
-}
+  
+  get_vlan_name() {
+    etcdctl ls /weave/vlans/$1 2> /dev/null || true
+  }
+  
+  does_vlan_exist() {
+    etcdctl ls /weave/vlans/$1 2>&1 1>/dev/null | grep '100:' | wc -l || true
+  }
+  
+  cidr2mask() {
+    local i mask=""
+    local full_octets=$(($1/8))
+    local partial_octet=$(($1%8))
+    
+    for ((i=0;i<4;i+=1)); do
+      if [ $i -lt $full_octets ]; then
+        mask+=255
+        elif [ $i -eq $full_octets ]; then
+        mask+=$((256 - 2**(8-$partial_octet)))
+      else
+        mask+=0
+      fi
+      test $i -lt 3 && mask+=.
+    done
+    
+    echo $mask
+  }
   
   
   case "$1" in
@@ -96,8 +96,8 @@ cidr2mask() {
       echo "I am the create case"
       case $1 in
         vlan)
-#          VLANEXIST=$(etcdctl ls /weave/vlans/$3 2>&1 | grep 100 || true)
-	  VLANEXIST=$(does_vlan_exist $3)
+          #          VLANEXIST=$(etcdctl ls /weave/vlans/$3 2>&1 | grep 100 || true)
+          VLANEXIST=$(does_vlan_exist $3)
           if [ "$VLANEXIST" -ne 1 ] ; then
             echo "Sorry - a vlan numbered $3 already exists!"
             exit 1
@@ -112,33 +112,32 @@ cidr2mask() {
             create_vlan $3 $2
           fi
         ;;
-	network)
-	shift 1
-	echo "I am the create network case switch"
-	echo "I have $# arguments which are $*"
-	if [ "$#" -ne 2 ]; then
-	 echo "You need 2 params - block in cidr notation and target vlan"
-	 exit 1
-	fi
-	echo "Checking if the vlan exists...."
-#	VLANEXIST=$(etcdctl ls /weave/vlans/$2 2>&1 | grep 100 || true)
-	VLANEXIST=$(does_vlan_exist $2)
+        network)
+          shift 1
+          echo "I am the create network case switch"
+          echo "I have $# arguments which are $*"
+          if [ "$#" -ne 2 ]; then
+            echo "You need 2 params - block in cidr notation and target vlan"
+            exit 1
+          fi
+          echo "Checking if the vlan exists...."
+          VLANEXIST=$(does_vlan_exist $2)
           if [ $VLANEXIST == 1  ] ; then
             echo "Sorry - vlan $3 doesnt exist!"
             exit 1
           else
-	echo "I am doing the stuffs"
-	echo "Calcumalating...."
-	ADDRESSBLOCK=$(echo $1 | awk -F\/ '{print $1}')
-	CURRCIDR=$(echo $1 | awk -F \/ '{print $2}')
-	NETMASK=$(cidr2mask $CURRCIDR)
-#	TARGETVLAN=$(etcdctl get /weave/vlans/namemap/$2 2>&1 | grep 100 || true)
-	TARGETVLAN=$(get_vlan_name $2)
-	echo "Target VLAN: $2"
-	echo "Addressblock=$ADDRESSBLOCK"
-	echo "Netmask=$NETMASK"
-	fi
-	;;
+            echo "I am doing the stuffs"
+            echo "Calcumalating...."
+            ADDRESSBLOCK=$(echo $1 | awk -F\/ '{print $1}')
+            CURRCIDR=$(echo $1 | awk -F \/ '{print $2}')
+            NETMASK=$(cidr2mask $CURRCIDR)
+            #	TARGETVLAN=$(etcdctl get /weave/vlans/namemap/$2 2>&1 | grep 100 || true)
+            TARGETVLAN=$(get_vlan_name $2)
+            echo "Target VLAN: $2"
+            echo "Addressblock=$ADDRESSBLOCK"
+            echo "Netmask=$NETMASK"
+          fi
+        ;;
         *)
           echo "Invalid selection"
         ;;
@@ -150,11 +149,7 @@ cidr2mask() {
         vlan)
           echo "I am destroy vlan and here are my args"
           echo "$*"
-#          VLANEXIST=$(etcdctl ls /weave/vlans/$3 2>&1 | grep 100 || true)
-#          if [ -z "$VLANEXIST" ] ; then
-#            echo "Sorry - vlan $3 doesnt exist!"
-#            exit 1
-        VLANEXIST=$(does_vlan_exist $2)
+          VLANEXIST=$(does_vlan_exist $2)
           if [ $VLANEXIST == 1  ] ; then
             echo "Sorry - vlan $3 doesnt exist!"
             exit 1
