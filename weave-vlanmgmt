@@ -50,13 +50,13 @@ case "$1" in
 	 shift 1
          case $1 in
                 vlan)
-                echo "Creating vlan $2 with numeric identifier $3"
-                VLECMD=(etcdctl ls /weave/vlans/$3)
-                VLANEXIST=$( "${VLECMD[@]}" 2>&1 )
-                 if [ -z "$VLANEXIST"] ; then
+                VLANEXIST=$(etcdctl ls /weave/vlans/$3 2>&1 | grep 100 || true)
+                 if [ -z "$VLANEXIST" ] ; then
                   echo "Sorry - a vlan numbered $3 already exists!"
-                 fi
+                 else
+                echo "Passed validation - moving along"
                 VNAMECMD=(etcdctl)
+                fi
                 ;;
                 *)
                 echo "Invalid selection"
