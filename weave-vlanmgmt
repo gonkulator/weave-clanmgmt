@@ -27,10 +27,10 @@ vlan() {
   does_vlan_exist() {
     etcdctl ls /weave/vlans/$1 2>&1 1>/dev/null | grep '100:' | wc -l || true
   }
-
+  
   does_network_exist_in_vlan() {
     etcdctl ls /weave/vlans/$1/network/$2 2>&1/dev/null | grep '100:' | wc -l || true
- }
+  }
   
   cidr2mask() {
     local i mask=""
@@ -51,26 +51,26 @@ vlan() {
     echo $mask
   }
   
-mask2cidr() {
+  mask2cidr() {
     nbits=0
     IFS=.
     for dec in $1 ; do
-        case $dec in
-            255) let nbits+=8;;
-            254) let nbits+=7;;
-            252) let nbits+=6;;
-            248) let nbits+=5;;
-            240) let nbits+=4;;
-            224) let nbits+=3;;
-            192) let nbits+=2;;
-            128) let nbits+=1;;
-            0);;
-            *) echo "Error: $dec is not recognised"; exit 1
-        esac
+      case $dec in
+        255) let nbits+=8;;
+        254) let nbits+=7;;
+        252) let nbits+=6;;
+        248) let nbits+=5;;
+        240) let nbits+=4;;
+        224) let nbits+=3;;
+        192) let nbits+=2;;
+        128) let nbits+=1;;
+        0);;
+        *) echo "Error: $dec is not recognised"; exit 1
+      esac
     done
     echo "$nbits"
-}
-
+  }
+  
   case "$1" in
     attach)
       #get the vlan num
@@ -148,22 +148,22 @@ mask2cidr() {
           if [ $VLANEXIST == 1  ] ; then
             echo "Sorry - vlan $3 doesnt exist!"
             exit 1
-          else
-	    NETWORKEXIST=$(does_network_exist_in_vlan $2 $1)
-	     if [ $NETWORKEXIST == 0 ] ; then
-            echo "I am doing the stuffs"
-            echo "Calcumalating...."
-            ADDRESSBLOCK=$(echo $1 | awk -F\/ '{print $1}')
-            CURRCIDR=$(echo $1 | awk -F \/ '{print $2}')
-            NETMASK=$(cidr2mask $CURRCIDR)
-            #	TARGETVLAN=$(etcdctl get /weave/vlans/namemap/$2 2>&1 | grep 100 || true)
-            TARGETVLAN=$(get_vlan_name $2)
-            echo "Target VLAN: $2"
-            echo "Addressblock=$ADDRESSBLOCK"
-            echo "Netmask=$NETMASK"
-	    else 
-		echo "Sorry - the network: $1 already exists in vlan: $2)
           fi
+          NETWORKEXIST=$(does_network_exist_in_vlan $2 $1)
+          if [ $NETWORKEXIST -ne 0 ] ; then
+            echo "Sorry - network $1 already exists in vlan $2"
+            exit 1
+          fi
+          echo "I am doing the stuffs"
+          echo "Calcumalating...."
+          ADDRESSBLOCK=$(echo $1 | awk -F\/ '{print $1}')
+          CURRCIDR=$(echo $1 | awk -F \/ '{print $2}')
+          NETMASK=$(cidr2mask $CURRCIDR)
+          #	TARGETVLAN=$(etcdctl get /weave/vlans/namemap/$2 2>&1 | grep 100 || true)
+          TARGETVLAN=$(get_vlan_name $2)
+          echo "Target VLAN: $2"
+          echo "Addressblock=$ADDRESSBLOCK"
+          echo "Netmask=$NETMASK"
         ;;
         *)
           echo "Invalid selection"
