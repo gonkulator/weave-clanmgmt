@@ -4,8 +4,6 @@ set -e
 
 #check for etcdctl in path and bomb if not
 etcdctl -v >/dev/null 2>&1 || { echo >&2 "$0 requires etcdctl but it's not in our path.  Aborting."; exit 1; }
-#check for cidr-to-ip.sh
-./cidr-to-ip.sh >/dev/null 2>&1 || { echo >&2 "$0 requires cidr-to-ip.sh but it's not in our path.  Aborting."; exit 1; }
 
 # ##FUNCTIONS## - netsted under vlan
 
