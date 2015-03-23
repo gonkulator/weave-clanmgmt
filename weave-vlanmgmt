@@ -182,6 +182,7 @@ vlan() {
             echo "Sorry - a vlan named $3 already exists!"
             exit 1
 	  fi
+	    echo "I am the create_vlan entry - and I am passing $3 $2 to the function"
             create_vlan $3 $2
         ;;
         network)
