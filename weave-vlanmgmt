@@ -25,6 +25,11 @@ vlan() {
     etcdctl ls /weave/vlans/$1 2> /dev/null || true
   }
   
+  does_vlan_name_exist() {
+    etcdctl ls /weave/vlans/namemap/$1 2>&1 1>/dev/null | grep '100:' | wc -l || true
+  }
+
+
   does_vlan_exist() {
     etcdctl ls /weave/vlans/$1 2>&1 1>/dev/null | grep '100:' | wc -l || true
   }
@@ -160,20 +165,24 @@ vlan() {
       echo "I am the create case"
       case $1 in
         vlan)
-          VLANEXIST=$(does_vlan_exist $3)
+     	echo "I am the vlan switch under create"
+	echo "My args are $* and I am passing $2 to does_vlan_exist"
+          VLANEXIST=$(does_vlan_exist $2)
           if [ "$VLANEXIST" == 0 ] ; then
-            echo "Sorry - a vlan numbered $3 already exists!"
+            echo "Sorry - a vlan numbered $2 already exists!"
             exit 1
           else
             echo "Passed validation - moving along"
           fi
-          VNEXIST=$(etcdctl ls /weave/vlans/namemap/$2 2>&1 | grep 100 || true)
-          if [ -z "$VNEXIST" ] ; then
-            echo "Sorry - a vlan named $2 already exists!"
+	  echo "Getting ready to run vnexist - my args are $*"
+          echo "I am passing $3 to vnexist"
+	  echo "Running vnexist against $3"
+          VNEXIST=$(does_vlan_name_exist $3)
+          if [ $VNEXIST == 0 ] ; then
+            echo "Sorry - a vlan named $3 already exists!"
             exit 1
-          else
+	  fi
             create_vlan $3 $2
-          fi
         ;;
         network)
           shift 1
