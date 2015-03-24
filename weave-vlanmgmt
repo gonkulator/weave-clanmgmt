@@ -22,9 +22,9 @@ vlan() {
   }
   
   does_ip_exist_in_vlan() {
-   etcdctl ls /weave/vlans/${TARGETVLAN}/network/${TARGETNETWORK}/rollcall/$(hostname) 2>&1 1>/dev/null | wc -l || true 
+    etcdctl ls /weave/vlans/${TARGETVLAN}/network/${TARGETNETWORK}/rollcall/$(hostname) 2>&1 1>/dev/null | wc -l || true
   }
-
+  
   get_vlan_name() {
     etcdctl ls /weave/vlans/$1 2> /dev/null || true
   }
@@ -32,8 +32,8 @@ vlan() {
   does_vlan_name_exist() {
     etcdctl ls /weave/vlans/namemap/$1 2>&1 1>/dev/null | grep '100:' | wc -l || true
   }
-
-
+  
+  
   does_vlan_exist() {
     etcdctl ls /weave/vlans/$1 2>&1 1>/dev/null | grep '100:' | wc -l || true
   }
@@ -128,7 +128,7 @@ vlan() {
       #grab the network particulars
       TARGETNETWORK=$(etcdctl ls /weave/vlans/${TARGETVLAN}/network | awk -F\/ '{print $6}')
       TARGETNETMASK=$(etcdctl get /weave/vlans/${TARGETVLAN}/network/${TARGETNETWORK}/netmask)
-      #see if we already have been assigned an ip in this vlan 
+      #see if we already have been assigned an ip in this vlan
       #does_ip_exist_in_vlan
       IHAZIP=$(does_ip_exist_in_vlan)
       if [ "$IHAZIP" == 0 ] ; then
@@ -170,8 +170,8 @@ vlan() {
       echo "I am the create case"
       case $1 in
         vlan)
-     	echo "I am the vlan switch under create"
-	echo "My args are $* and I am passing $2 to does_vlan_exist"
+          echo "I am the vlan switch under create"
+          echo "My args are $* and I am passing $2 to does_vlan_exist"
           VLANEXIST=$(does_vlan_exist $2)
           if [ "$VLANEXIST" == 0 ] ; then
             echo "Sorry - a vlan numbered $2 already exists!"
@@ -179,16 +179,16 @@ vlan() {
           else
             echo "Passed validation - moving along"
           fi
-	  echo "Getting ready to run vnexist - my args are $*"
+          echo "Getting ready to run vnexist - my args are $*"
           echo "I am passing $3 to vnexist"
-	  echo "Running vnexist against $3"
+          echo "Running vnexist against $3"
           VNEXIST=$(does_vlan_name_exist $3)
           if [ $VNEXIST == 0 ] ; then
             echo "Sorry - a vlan named $3 already exists!"
             exit 1
-	  fi
-	    echo "I am the create_vlan entry - and I am passing $3 $2 to the function"
-            create_vlan $3 $2
+          fi
+          echo "I am the create_vlan entry - and I am passing $3 $2 to the function"
+          create_vlan $3 $2
         ;;
         network)
           shift 1
@@ -231,13 +231,13 @@ vlan() {
           echo "Target VLAN: $2"
           echo "Addressblock=$ADDRESSBLOCK"
           echo "Netmask=$NETMASK"
-	  echo "Creating network..."
-	  etcdctl mkdir /weave/vlans/$2/network/$ADDRESSBLOCK
-	  etcdctl mkdir /weave/vlans/$2/network/$ADDRESSBLOCK/ip-pool
-	  etcdctl mkdir /weave/vlans/$2/network/$ADDRESSBLOCK/ip-pool/available
-	  etcdctl mkdir /weave/vlans/$2/network/$ADDRESSBLOCK/ip-pool/assigned
-	  etcdctl mkdir /weave/vlans/$2/network/$ADDRESSBLOCK/ip-pool/rollcall
-	  etcdctl mk /weave/vlans/$2/network/$ADDRESSBLOCK/netmask $CURRCIDR
+          echo "Creating network..."
+          etcdctl mkdir /weave/vlans/$2/network/$ADDRESSBLOCK
+          etcdctl mkdir /weave/vlans/$2/network/$ADDRESSBLOCK/ip-pool
+          etcdctl mkdir /weave/vlans/$2/network/$ADDRESSBLOCK/ip-pool/available
+          etcdctl mkdir /weave/vlans/$2/network/$ADDRESSBLOCK/ip-pool/assigned
+          etcdctl mkdir /weave/vlans/$2/network/$ADDRESSBLOCK/ip-pool/rollcall
+          etcdctl mk /weave/vlans/$2/network/$ADDRESSBLOCK/netmask $CURRCIDR
           for i in ${MYIPARRAY[*]} ; do
             etcdctl mk /weave/vlans/$2/network/$ADDRESSBLOCK/ip-pool/available/$i avail
           done
@@ -263,6 +263,10 @@ vlan() {
             destroy_vlan $2 $TARGETNAME
           fi
         ;;
+	network)
+	echo "I am the destroy network switch and here are my args"
+	echo "$*"
+	;;
         *)
           echo "Invalid selection"
         ;;
