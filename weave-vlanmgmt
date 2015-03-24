@@ -1,5 +1,9 @@
 #!/bin/sh
 #the very beginning of weave vlan assignment/management
+#weave-vlanmgmt v1.0
+#jm@gonkulator.io
+#3/23/2015
+
 set -e
 
 #check for etcdctl in path and bomb if not
@@ -167,11 +171,12 @@ vlan() {
     ;;
     create)
       shift 1
-      echo "I am the create case"
       case $1 in
         vlan)
-          echo "I am the vlan switch under create"
-          echo "My args are $* and I am passing $2 to does_vlan_exist"
+          if [ "$#" -ne 2 ]; then
+            echo "usage: weave-vlanmgmt vlan create vlan-number vlan-human-readable-name"
+            exit 1
+          fi
           VLANEXIST=$(does_vlan_exist $2)
           if [ "$VLANEXIST" == 0 ] ; then
             echo "Sorry - a vlan numbered $2 already exists!"
@@ -179,23 +184,19 @@ vlan() {
           else
             echo "Passed validation - moving along"
           fi
-          echo "Getting ready to run vnexist - my args are $*"
-          echo "I am passing $3 to vnexist"
-          echo "Running vnexist against $3"
           VNEXIST=$(does_vlan_name_exist $3)
           if [ $VNEXIST == 0 ] ; then
             echo "Sorry - a vlan named $3 already exists!"
             exit 1
           fi
-          echo "I am the create_vlan entry - and I am passing $3 $2 to the function"
           create_vlan $3 $2
         ;;
         network)
           shift 1
-          echo "I am the create network case switch"
-          echo "I have $# arguments which are $*"
           if [ "$#" -ne 2 ]; then
-            echo "You need 2 params - block in cidr notation and target vlan"
+            echo "usage: weave-vlanmgmt create network network/cidr target-vlan"
+            echo "example: weave-vlanmgmt create network 172.16.0.0/24 9999"
+            echo "NOTE: weave-vlanmgmt only supports /24 networks at the moment"
             exit 1
           fi
           ADDRESSBLOCK=$(echo $1 | awk -F\/ '{print $1}')
@@ -205,24 +206,18 @@ vlan() {
             exit 1
           fi
           echo "Checking if the vlan exists...."
-          echo "My args are: $*"
-          echo "I am passing $2 to does_vlan_exist"
           VLANEXIST=$(does_vlan_exist $2)
           if [ $VLANEXIST == 1  ] ; then
             echo "Sorry - vlan $3 doesnt exist!"
             exit 1
           fi
           echo "Checking if network exists in target vlan..."
-          echo "My args are: $*"
-          echo "I am passing $2 $1 to does_network_exist_in_vlan"
           NETWORKEXIST=$(does_network_exist_in_vlan $2 $ADDRESSBLOCK)
-          echo "value of NETWORKEXIST is $NETWORKEXIST"
           if [ $NETWORKEXIST ==  0 ] ; then
             echo "Sorry - network $1 already exists in vlan $2"
             exit 1
           fi
-          echo "I am doing the stuffs"
-          echo "Calcumalating...."
+          "Calculating..."
           network_address_to_ips $1
           ADDRESSBLOCK=$(echo $1 | awk -F\/ '{print $1}')
           CURRCIDR=$(echo $1 | awk -F \/ '{print $2}')
@@ -239,7 +234,7 @@ vlan() {
           etcdctl mkdir /weave/vlans/$2/network/$ADDRESSBLOCK/ip-pool/rollcall
           etcdctl mk /weave/vlans/$2/network/$ADDRESSBLOCK/netmask $CURRCIDR
           for i in ${MYIPARRAY[*]} ; do
-            etcdctl mk /weave/vlans/$2/network/$ADDRESSBLOCK/ip-pool/available/$i avail
+            etcdctl mk /weave/vlans/$2/network/$ADDRESSBLOCK/ip-pool/available/$i avail 2>&1 >/dev/null
           done
         ;;
         *)
@@ -251,32 +246,36 @@ vlan() {
       shift 1
       case $1 in
         vlan)
-          echo "I am destroy vlan and here are my args"
-          echo "$*"
+          if [ "$#" -ne 1 ]; then
+            echo "usage: weave-vlanmgmt destroy vlan vlan-number"
+            exit 1
+          fi
           VLANEXIST=$(does_vlan_exist $2)
           if [ $VLANEXIST == 1  ] ; then
             echo "Sorry - vlan $3 doesnt exist!"
             exit 1
           else
-            echo "Passed validation - moving along"
             TARGETNAME=$(etcdctl get /weave/vlans/namemap/$2)
             destroy_vlan $2 $TARGETNAME
           fi
         ;;
-	network)
-	shift 1
-	echo "I am the destroy network switch and here are my args"
-	echo "$*"
-	echo "Args should be 1=vlan 2=network"
-	 NETWORKEXIST=$(does_network_exist_in_vlan $1 $2)
+        network)
+          shift 1
+          if [ "$#" -ne 2 ]; then
+            echo "usage: weave-vlanmgmt destroy network vlan-number network-block"
+            echo "example: weave-vlanmgmt destroy network 9999 172.16.0.0"
+            exit 1
+          fi
+          echo "Args should be 1=vlan 2=network"
+          NETWORKEXIST=$(does_network_exist_in_vlan $1 $2)
           echo "value of NETWORKEXIST is $NETWORKEXIST"
           if [ $NETWORKEXIST ==  1 ] ; then
             echo "Sorry - network $2 doesn't exist in vlan $1"
             exit 1
           fi
-	 echo "Ok gonna kill it boss"
-	 etcdctl rm --recursive /weave/vlans/$1/network/$2
-	;;
+          echo "Destroying network $2 in vlan $1"
+          etcdctl rm --recursive /weave/vlans/$1/network/$2
+        ;;
         *)
           echo "Invalid selection"
         ;;
