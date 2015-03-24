@@ -268,15 +268,14 @@ clan() {
             echo "example: weave-clanmgmt destroy network 9999 172.16.0.0"
             exit 1
           fi
-          echo "Args should be 1=clan 2=network"
           NETWORKEXIST=$(does_network_exist_in_clan $1 $2)
-          echo "value of NETWORKEXIST is $NETWORKEXIST"
           if [ $NETWORKEXIST ==  1 ] ; then
             echo "Sorry - network $2 doesn't exist in clan $1"
             exit 1
           fi
           echo "Destroying network $2 in clan $1"
           etcdctl rm --recursive /weave/clans/$1/network/$2
+	  echo "Done."
         ;;
         *)
           echo "Invalid selection"
