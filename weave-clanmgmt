@@ -220,7 +220,6 @@ clan() {
           fi
           echo "Calculating..."
           network_address_to_ips $1
-          echo "cmdline for network_address_to_ips is blargh $1"
           ADDRESSBLOCK=$(echo $1 | awk -F\/ '{print $1}')
           CURRCIDR=$(echo $1 | awk -F \/ '{print $2}')
           NETMASK=$(cidr2mask $CURRCIDR)
@@ -249,7 +248,7 @@ clan() {
       shift 1
       case $1 in
         clan)
-          if [ "$#" -ne 1 ]; then
+          if [ "$#" -ne 2 ]; then
             echo "usage: weave-clanmgmt destroy clan clan-number"
             exit 1
           fi
