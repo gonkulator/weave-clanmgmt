@@ -30,6 +30,16 @@ etcdctl mk /weave/clans/1/network/172.16.99.0/ip-pool/available/172.16.99.7 avai
 etcdctl mk /weave/clans/1/network/172.16.99.0/ip-pool/available/172.16.99.8 avail
 etcdctl mk /weave/clans/1/network/172.16.99.0/ip-pool/available/172.16.99.9 avail
 etcdctl mk /weave/clans/1/network/172.16.99.0/ip-pool/available/172.16.99.10 avail
+etcdctl mk /weave/clans/1/network/172.16.99.0/ip-pool/available/172.16.99.11 avail
+etcdctl mk /weave/clans/1/network/172.16.99.0/ip-pool/available/172.16.99.12 avail
+etcdctl mk /weave/clans/1/network/172.16.99.0/ip-pool/available/172.16.99.13 avail
+etcdctl mk /weave/clans/1/network/172.16.99.0/ip-pool/available/172.16.99.14 avail
+etcdctl mk /weave/clans/1/network/172.16.99.0/ip-pool/available/172.16.99.15 avail
+etcdctl mk /weave/clans/1/network/172.16.99.0/ip-pool/available/172.16.99.16 avail
+etcdctl mk /weave/clans/1/network/172.16.99.0/ip-pool/available/172.16.99.17 avail
+etcdctl mk /weave/clans/1/network/172.16.99.0/ip-pool/available/172.16.99.18 avail
+etcdctl mk /weave/clans/1/network/172.16.99.0/ip-pool/available/172.16.99.19 avail
+etcdctl mk /weave/clans/1/network/172.16.99.0/ip-pool/available/172.16.99.20 avail
 etcdctl mkdir /weave/clans/2/network
 etcdctl mkdir /weave/clans/2/network/172.16.98.0
 etcdctl mk /weave/clans/2/network/172.16.98.0/netmask 24
