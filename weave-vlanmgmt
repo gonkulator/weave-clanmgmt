@@ -264,8 +264,17 @@ vlan() {
           fi
         ;;
 	network)
+	shift 1
 	echo "I am the destroy network switch and here are my args"
 	echo "$*"
+	echo "Args should be 1=vlan 2=network"
+	 NETWORKEXIST=$(does_network_exist_in_vlan $1 $2)
+          echo "value of NETWORKEXIST is $NETWORKEXIST"
+          if [ $NETWORKEXIST ==  1 ] ; then
+            echo "Sorry - network $2 doesn't exist in vlan $2"
+            exit 1
+          fi
+	 echo "Ok gonna kill it boss"
 	;;
         *)
           echo "Invalid selection"
