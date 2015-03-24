@@ -47,7 +47,7 @@ vlan() {
     etcdctl ls /weave/vlans/$1/network/$2 2>&1 1>/dev/null | grep '100:' | wc -l || true
   }
   
-#great routine from http://stackoverflow.com/users/1128705/florian-feldhaus
+  #great routine from http://stackoverflow.com/users/1128705/florian-feldhaus
   network_address_to_ips() {
     # define empty array to hold the ip addresses
     MYIPARRAY=()
@@ -219,7 +219,7 @@ vlan() {
           fi
           "Calculating..."
           network_address_to_ips $1
-	  echo "cmdline for network_address_to_ips is blargh $1"
+          echo "cmdline for network_address_to_ips is blargh $1"
           ADDRESSBLOCK=$(echo $1 | awk -F\/ '{print $1}')
           CURRCIDR=$(echo $1 | awk -F \/ '{print $2}')
           NETMASK=$(cidr2mask $CURRCIDR)
