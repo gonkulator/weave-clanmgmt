@@ -271,10 +271,11 @@ vlan() {
 	 NETWORKEXIST=$(does_network_exist_in_vlan $1 $2)
           echo "value of NETWORKEXIST is $NETWORKEXIST"
           if [ $NETWORKEXIST ==  1 ] ; then
-            echo "Sorry - network $2 doesn't exist in vlan $2"
+            echo "Sorry - network $2 doesn't exist in vlan $1"
             exit 1
           fi
 	 echo "Ok gonna kill it boss"
+	 etcdctl rm --recursive /weave/vlans/$1/network/$2
 	;;
         *)
           echo "Invalid selection"
