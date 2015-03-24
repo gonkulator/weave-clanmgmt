@@ -254,7 +254,7 @@ vlan() {
           echo "I am destroy vlan and here are my args"
           echo "$*"
           VLANEXIST=$(does_vlan_exist $2)
-          if [ $VLANEXIST == 0  ] ; then
+          if [ $VLANEXIST == 1  ] ; then
             echo "Sorry - vlan $3 doesnt exist!"
             exit 1
           else
